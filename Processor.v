@@ -1,9 +1,7 @@
 module Processor
 	(
 		input clk,
-		input [ 9:0] PC	/* Memory file has room for 256 instructions
-									PC has to count up to (255 * 4) 			bc PC is divided by 4 before fetching instruction
-									log(1020) / log(2) = 9.9 -> PC is a 10 bit bus to count up to 1020 */
+		input [ :0] PC	
 	
 	);
 	
@@ -12,32 +10,28 @@ module Processor
 	
 	
 //	-	-	-	-	-	-	-	-	-	INSTRUCTION MEMORY	-	-	-	-	-	-	-	-	-	
-	Instruction_Mem my_instruction_memory 
-		(
-			.address ( PC[9:2]  ),  /* PC>>2 (dropping the first 2 bits)
-											PC increments by 4 (1 byte) but the memory file is word addressable (4 bytes) */
-			.clock ( clk ),       // Connect clock
-			.q ( instruction )         // This is where the 32-bit data comes out
+	Memory	Memory_inst (
+		.address ( address_sig ),
+		.clock ( clock_sig ),
+		.data ( data_sig ),
+		.wren ( wren_sig ),
+		.q ( q_sig )
 		);
 
-	//SINGLE CYCLE MEMORY ACCESS
-	//EVERY CLOCK CYCLE REFRESHES INSTRUCTION
+		//		why cant I make a 1 cycle access ROM for instructions and a 2 cycle access RAM for data?
+		
 	/* HOW I MADE THE MEMORY
 			1. MADE A NEW MEMORY INITIALIZATION FILE (.mif)		note- I think it would work the same with a Hexidecimal file (.hex)
-			2. SEARCHED FOR ROM: 1-PORT IN IP CATALOG
-			3. USED MEGA WIZARD TO SET UP 1 CYCLE MEMORY
-				3a. SET INITIAL CONTENT OF MEMORY TO MY .MIF FILE	*/
+			2. Under IP CATALOG TO SEARCH FOR RAM (RAM: 1-PORT)
+			3. USED MEGA WIZARD TO SET UP MEMORY
+				3a. 'q' = 32 because each instruction is 32 bits
+				3b.	1052 32 BIT WORDS			 **MATCHES THE .MIF FILE** 
+				3c.	REGISTER 'q' OUTPUT PORT		** MEMORY ACCESS IS 2 CYCLE ** (a little confused why registering 'q' is worth the extra cyccle)
+				3d.	SWITCHED q OUTPUT TO Don't Care WHEN MEMORY IS BEING WRITEN TO
+				3e.	INITIALIZE CONTENT OF THE MEMORY TO Memory.mif
+				*/
 				
 
-				
-				
-//	-	-	-	-	-	-	-	-	-	CONTROL MODULE	-	-	-	-	-	-	-	-	-	
-	/*Control control
-		(
-			.opcode	(	instruction	[6:0]	),		//	[0-6] goes to control module
-		
-		);
-*/
 
 
 
