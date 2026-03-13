@@ -84,18 +84,42 @@ module Processor
 		endcase
 		
 		
-		/*		OPCODE DEFINITIONS		*/
+					/*		OPCODE DEFINITIONS		*/
 		parameter
 						
-			/*		Register-Register Arithmetic Instructions		*/
+			/*		Control/Status Register Instructions		(CSRR, CSRW)		*/
 			
-						ADD	= 7'b0110011,
-						SUB	= 7'b0110011,
-						AND	= 7'b0110011,
-						OR		= 7'b0110011,
-						XOR	= 7'b0110011,
-						SLT	= 7'b0110011,
+						CSR_INS	= 7'b1110011,
 						
+			/*		Register-Register Arithmetic Instructions
+				(ADD, SUB, AND, OR, XOR, SLT, SLTU, SRA, SRL, SLL, MUL)		*/
+			
+						REG_REG	= 7'b0110011,
+						
+			/*		Register-Immediate Arithmetic Instructions
+				(ADDI, ANDI, ORI, XORI, SLTI, SLTIU, SRAI, SRLI, SLLI)		*/
+						
+						REG_IMM	= 7'b0010011,
+						LUI		= 7'b0110111,
+						AUIPC		= 7'b0010111,
+
+			/*		Memory Instructions		*/
+						
+						LOAD			= 7'b0000011,
+						STPRE			= 7'b0100011,
+
+			/*		Unconditional Jump Instructions		*/
+						
+						JAL		= 7'b1101111,
+						JR			= 7'b1100111,		//	(JR, JALR)
+						
+			/*		Conditional Branch Instructions
+				(BEQ, BNE, BLT, BGE, BLTU, BGEU)		*/
+				
+						BRANCH      = 7'b1100011;
+			
+						
+			
 		
 		
 		/*		THIS BLOCK CHANGES SIGNALS BASED ON THE STATE		*/
