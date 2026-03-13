@@ -2,14 +2,14 @@ module Processor
 	(
 		input clk,
 		input rst,
-		input [ 10:0] PC	
+		input [ 9:0] PC	
 	
 	);
 	
-	reg [10:0] address;		// SIZE OF THIS BUS MAY CHANGE IF I CHANGE MEMORY CAPACITY	- UPDATE SYMBOL FILE FOR MEMORY.V TO DOUBLE CHECK
+	reg [9:0] address;		// SIZE OF THIS BUS MAY CHANGE IF I CHANGE MEMORY CAPACITY	- UPDATE SYMBOL FILE FOR MEMORY.V TO DOUBLE CHECK
 	reg [31:0] data_in;
 	reg wren;
-	reg [31:0] data_out;
+	wire [31:0] data_out;
 	
 
 	
@@ -85,25 +85,51 @@ module Processor
 		
 		/*		THIS BLOCK CHANGES SIGNALS BASED ON THE STATE		*/
 		always@(posedge clk or negedge rst)
+		
+			if(rst == 1'b0)			//RESET BUTTON IS RESTING HIGH
+				begin
+					address <= 10'd0;		// SIZE OF THIS BUS MAY CHANGE IF I CHANGE MEMORY CAPACITY	- UPDATE SYMBOL FILE FOR MEMORY.V TO DOUBLE CHECK
+					data_in <= 32'd0;
+					wren <= 1'b0;
+				end
+			else
+			
+					
 			case(S)
 			
 				START:
 					begin
-						
+						address <= 10'd0;		// SIZE OF THIS BUS MAY CHANGE IF I CHANGE MEMORY CAPACITY	- UPDATE SYMBOL FILE FOR MEMORY.V TO DOUBLE CHECK
+						data_in <= 32'd0;
+						wren <= 1'b0;
 					end
 					
 				FETCH:
 					begin
-						
+						address <= PC;
+						wren <= 1'b0;
 					end
 					
 				FETCH_2:
 					begin
-						
+							//EMPTY STATE WAITING FOR q (DATA_OUT)
 					end
 					
 				DECODE:
 					begin
+						/*		UPDATE CONTROL SIGNALS BASED ON INSTRUCTION		*/	
+						case( data_out [6:0] )			// the first 7 bits of the instruction are the opcode in tiny risc-V
+						
+						endcase
+						
+						
+						
+						
+						
+						
+						
+						
+						
 						
 					end
 					
