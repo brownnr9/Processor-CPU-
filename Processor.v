@@ -76,11 +76,26 @@ module Processor
 			FETCH_2:	NS = DECODE;
 			DECODE:	NS = EXECUTE;
 			EXECUTE:	NS = WRITE_BACK;
+			WRITE_BACK:	NS = FETCH;
 			
 				default: NS = STOP;		//IF ERROR -> STOP
 				STOP:	NS = STOP;
 		
 		endcase
+		
+		
+		/*		OPCODE DEFINITIONS		*/
+		parameter
+						
+			/*		Register-Register Arithmetic Instructions		*/
+			
+						ADD	= 7'b0110011,
+						SUB	= 7'b0110011,
+						AND	= 7'b0110011,
+						OR		= 7'b0110011,
+						XOR	= 7'b0110011,
+						SLT	= 7'b0110011,
+						
 		
 		
 		/*		THIS BLOCK CHANGES SIGNALS BASED ON THE STATE		*/
@@ -119,7 +134,7 @@ module Processor
 					begin
 						/*		UPDATE CONTROL SIGNALS BASED ON INSTRUCTION		*/	
 						case( data_out [6:0] )			// the first 7 bits of the instruction are the opcode in tiny risc-V
-						
+							
 						endcase
 						
 						
@@ -136,6 +151,11 @@ module Processor
 				EXECUTE:
 					begin
 						
+					end
+					
+				WRITE_BACK:
+					begin
+					
 					end
 
 
