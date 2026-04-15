@@ -63,22 +63,84 @@ module Processor
 	reg [4:0] write_reg;
 	reg [31:0] write_data;
 	reg [4:0] read_reg_1, read_reg_2;
-	reg [31:0] read_data_1, read_data_2;
+	wire [31:0] read_data_1, read_data_2;
 	
 	Registers registers (
 		.clk ( clk ),
 		.rst ( rst ),
-		.wren ( ),
-		.write_reg ( ),
-		.write_data ( ),
-		.read_reg_1 ( ),
-		.read_reg_2 ( ),
-		.read_data_1 ( ),
-		.read_data_2 ( )
+		.wren ( reg_wren ),
+		.write_reg ( write_reg ),
+		.write_data ( write_data ),
+		.read_reg_1 ( read_reg_1 ),
+		.read_reg_2 ( read_reg_2 ),
+		.read_data_1 ( read_data_1 ),
+		.read_data_2 ( read_data_2 )
 		);
+		
+
+		
+//	-	-	-	-	-	-	-	-	-	 ALU INSTANTIATION	-	-	-	-	-	-	-	-	-	
+
+	wire [31:0] aluOut;
+	reg [31:0] aluIn2;
+	ALU myALU (
+		.rs1( read_data_1 ),		//register input to alu
+		.rs2(	aluIn2 ),						//this could be a register or an immediete
+		.aluControl( aluControl ),
+		.out(aluOut)
+	);
 
 
 
+				/*		OPCODE DEFINITIONS		*/
+	parameter
+					
+		/*		Control/Status Register Instructions		(CSRR, CSRW)		*/
+		//NOTE: IGNORE THESE 2 INSTRUCTIONS FOR THIS EXCERCISE!
+					CSR_INS	= 7'b1110011,
+					
+		/*		Register-Register Arithmetic Instructions
+			(ADD, SUB, AND, OR, XOR, SLT, SLTU, SRA, SRL, SLL, MUL)		*/
+		
+					REG_REG	= 7'b0110011,
+					
+		/*		Register-Immediate Arithmetic Instructions
+			(ADDI, ANDI, ORI, XORI, SLTI, SLTIU, SRAI, SRLI, SLLI)		*/
+					
+					REG_IMM	= 7'b0010011,
+					LUI		= 7'b0110111,
+					AUIPC		= 7'b0010111,
+
+		/*		Memory Instructions		*/
+					
+					LOAD			= 7'b0000011,
+					STORE			= 7'b0100011,
+
+		/*		Unconditional Jump Instructions		*/
+					
+					JAL		= 7'b1101111,
+					JR			= 7'b1100111,		//	(JR, JALR)
+					
+		/*		Conditional Branch Instructions
+			(BEQ, BNE, BLT, BGE, BLTU, BGEU)		*/
+			
+					BRANCH      = 7'b1100011;
+					
+		/*		CONTROL SIGNALS	*/
+					
+					reg [ 3:0] aluControl;
+						parameter
+							ADD	=	4'd0,
+							SUB	=	4'd1,
+							AND	=	4'd2,
+							OR	=	4'd3,
+							XOR	=	4'd4,
+							SLT	=	4'd5,
+							SLTU	=	4'd6,
+							SRA	=	4'd7,
+							SRL	=	4'd8,
+							SLL	=	4'd9,
+							MUL	=	4'd10;
 
 
 
@@ -122,39 +184,8 @@ module Processor
 		endcase
 		
 		
-					/*		OPCODE DEFINITIONS		*/
-		parameter
-						
-			/*		Control/Status Register Instructions		(CSRR, CSRW)		*/
-			
-						CSR_INS	= 7'b1110011,
-						
-			/*		Register-Register Arithmetic Instructions
-				(ADD, SUB, AND, OR, XOR, SLT, SLTU, SRA, SRL, SLL, MUL)		*/
-			
-						REG_REG	= 7'b0110011,
-						
-			/*		Register-Immediate Arithmetic Instructions
-				(ADDI, ANDI, ORI, XORI, SLTI, SLTIU, SRAI, SRLI, SLLI)		*/
-						
-						REG_IMM	= 7'b0010011,
-						LUI		= 7'b0110111,
-						AUIPC		= 7'b0010111,
-
-			/*		Memory Instructions		*/
-						
-						LOAD			= 7'b0000011,
-						STORE			= 7'b0100011,
-
-			/*		Unconditional Jump Instructions		*/
-						
-						JAL		= 7'b1101111,
-						JR			= 7'b1100111,		//	(JR, JALR)
-						
-			/*		Conditional Branch Instructions
-				(BEQ, BNE, BLT, BGE, BLTU, BGEU)		*/
-				
-						BRANCH      = 7'b1100011;
+		
+		
 			
 						
 			
@@ -204,9 +235,40 @@ module Processor
 								
 									case ( data_out [14:12] ) 		// func3 specifies the instruction
 										
-										/*	add, sub */
+										/*	add, sub, mul */
 										3'b000:
-											;
+											if(data_out [30])
+												aluControl <= SUB;
+											else if (data_out[25])
+												aluControl	<= MUL;
+											else
+												aluControl <= ADD;
+										
+										3'b111:
+											aluControl	<=	AND;
+											
+										3'b110:
+											aluControl	<=	OR;
+											
+										3'b100:
+											aluControl	<=	XOR;
+											
+										3'b010:
+											aluControl	<=	SLT;
+											
+										3'b011:
+											aluControl	<=	SLTU;
+											
+										/*	SHIFT RIGHT (ARETHMETIC AND LOGIC)	*/
+										3'b101:
+											if(data_out[30])
+												aluControl	<=	SRA;
+											else
+												aluControl	<=	SRL;
+										
+										3'b001:
+											aluControl	<=	SLL;
+											
 											
 									
 									endcase
@@ -233,6 +295,12 @@ module Processor
 					
 				EXECUTE:
 					begin
+						if( data_out [6:0] == REG_REG	)
+						begin
+							aluIn2 <= read_data_2;
+							
+						end
+						
 					
 						
 						
