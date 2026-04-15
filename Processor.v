@@ -44,6 +44,44 @@ module Processor
 				*/
 				
 				
+//	-	-	-	-	-	-	-	-	-	 REGISTER FILE INSTANTIATION	-	-	-	-	-	-	-	-	-	
+
+	/*
+		input clk,
+		input rst,
+		input wren,
+		input [4:0] write_reg,		//	ADDRESS OF REGISTER TO BE WRITTEN TO
+		input [ 31:0] write_data,
+		input [4:0] read_reg_1,		//	ADDRESS OF REGISTER TO BE READ FROM
+		input [4:0] read_reg_2,
+		output [ 31:0] read_data_1,		//	THE DATA IN REGISTER AT ADDR READ_REG_1
+		output [ 31:0] read_data_2;
+		*/
+		
+	
+	reg reg_wren;
+	reg [4:0] write_reg;
+	reg [31:0] write_data;
+	reg [4:0] read_reg_1, read_reg_2;
+	reg [31:0] read_data_1, read_data_2;
+	
+	Registers registers (
+		.clk ( clk ),
+		.rst ( rst ),
+		.wren ( ),
+		.write_reg ( ),
+		.write_data ( ),
+		.read_reg_1 ( ),
+		.read_reg_2 ( ),
+		.read_data_1 ( ),
+		.read_data_2 ( )
+		);
+
+
+
+
+
+
 //	-	-	-	-	-	-	-	-	-	 FINITE STATE MACHINE (FSM)	-	-	-	-	-	-	-	-	-	
 				
 	reg [ 2:0 ] S;		//	CURRENT STATE
@@ -106,7 +144,7 @@ module Processor
 			/*		Memory Instructions		*/
 						
 						LOAD			= 7'b0000011,
-						STPRE			= 7'b0100011,
+						STORE			= 7'b0100011,
 
 			/*		Unconditional Jump Instructions		*/
 						
@@ -157,10 +195,31 @@ module Processor
 				DECODE:
 					begin
 						/*		UPDATE CONTROL SIGNALS BASED ON INSTRUCTION		*/	
+						
 						case( data_out [6:0] )			// the first 7 bits of the instruction are the opcode in tiny risc-V
 							
+							REG_REG: 
+								begin
+									write_reg <= data_out [11:7];		//address of reg being written to
+								
+									case ( data_out [14:12] ) 		// func3 specifies the instruction
+										
+										/*	add, sub */
+										3'b000:
+											;
+											
+									
+									endcase
+									
+								end
+							
+							
+							
+							
+							
+							
+							
 						endcase
-						
 						
 						
 						
@@ -174,6 +233,10 @@ module Processor
 					
 				EXECUTE:
 					begin
+					
+						
+						
+						
 						
 					end
 					
@@ -181,7 +244,10 @@ module Processor
 					begin
 					
 					end
-
+					
+					
+					
+			endcase
 
 
 
