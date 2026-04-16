@@ -2,10 +2,11 @@ module Processor
 	(
 		input clk,
 		input rst,
-		input [ 9:0] PC	
+		output reg [9:0] LED
 	
 	);
 	
+	reg [ 9:0] PC;
 	reg [9:0] address;		// SIZE OF THIS BUS MAY CHANGE IF I CHANGE MEMORY CAPACITY	- UPDATE SYMBOL FILE FOR MEMORY.V TO DOUBLE CHECK
 	reg [31:0] data_in;
 	reg wren;
@@ -82,9 +83,9 @@ module Processor
 //	-	-	-	-	-	-	-	-	-	 ALU INSTANTIATION	-	-	-	-	-	-	-	-	-	
 
 	wire [31:0] aluOut;
-	reg [31:0] aluIn2;
+	reg [31:0] aluIn1, aluIn2;
 	ALU myALU (
-		.rs1( read_data_1 ),		//register input to alu
+		.rs1( aluIn1 ),		//register input to alu
 		.rs2(	aluIn2 ),						//this could be a register or an immediete
 		.aluControl( aluControl ),
 		.out(aluOut)
@@ -232,6 +233,8 @@ module Processor
 							REG_REG: 
 								begin
 									write_reg <= data_out [11:7];		//address of reg being written to
+									read_reg_1 <= data_out [19:15];	//addresses of registers being read from
+									read_reg_2 <= data_out [24:20];
 								
 									case ( data_out [14:12] ) 		// func3 specifies the instruction
 										
@@ -295,8 +298,10 @@ module Processor
 					
 				EXECUTE:
 					begin
+						reg_wren <= 1'b0;	//	do not write to register in execute phase
 						if( data_out [6:0] == REG_REG	)
 						begin
+							aluIn1	<=	read_data_1;
 							aluIn2 <= read_data_2;
 							
 						end
@@ -310,7 +315,18 @@ module Processor
 					
 				WRITE_BACK:
 					begin
+					/*		TEST		*/
+					if(aluOut == 1)
+					LED <= 10'b0011111111;
 					
+						reg_wren <= 1'b1;
+						if( data_out [6:0] == REG_REG )
+						begin
+							write_data <= aluOut;
+							PC	<=	PC+1;
+						end
+						
+						
 					end
 					
 					

@@ -17,13 +17,19 @@ module Registers
 	
 	reg [31:0] register [31:0];		//	A 32 INDEX ARRAY OF REGISTERS
 	
+	integer i;
 	always@(posedge clk or negedge rst)
 	begin
 		if( rst == 1'b0)
 			begin
-				integer i;
+			
+			
 				for (i=0; i<32;i=i+1)
 					register [i] <= 32'd0;
+			
+		/*		HARD WIRE REGISTERS FOR TESTING REG TO REG FUNCTIONS		*/
+			register[0] <= 32'd0;
+			register[1] <= 32'd1;
 			end
 		else
 		
