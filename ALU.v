@@ -27,14 +27,17 @@ always@(*)
 	case (aluControl)
 		ADD:	out = rs1 + rs2;
 		SUB:	out = rs1 - rs2;
-		AND:	out = rs1 && rs2;
-		OR:	out = rs1 || rs2;
+		AND:	out = rs1 & rs2;
+		OR:	out = rs1 | rs2;
 		XOR:	out = rs1 ^ rs2;
 		SLT:	out = $signed(rs1) < $signed(rs2);
 		SLTU: out = rs1 < rs2;
 		SRA:	out = rs1 >>> rs2;
 		SRL:	out = rs1 >> rs2;
+		SLL:	out = rs1 << rs2;
 		MUL:	out = rs1 * rs2;
+		
+		default: out = 32'b0;
 		
 	endcase
 

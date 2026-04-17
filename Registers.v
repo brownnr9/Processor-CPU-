@@ -22,18 +22,11 @@ module Registers
 	begin
 		if( rst == 1'b0)
 			begin
-			
-			
 				for (i=0; i<32;i=i+1)
 					register [i] <= 32'd0;
-			
-		/*		HARD WIRE REGISTERS FOR TESTING REG TO REG FUNCTIONS		*/
-			register[0] <= 32'd0;
-			register[1] <= 32'd1;
-			end
-		else
+				end
 		
-		if( wren == 1'b1)			//WRITE ENABLE IS ON
+		else if( wren == 1'b1)			//WRITE ENABLE IS ON
 			register [write_reg] <= write_data;
 		
 		/*		REG TYPES <= THEMSELVES BY DEFAULT

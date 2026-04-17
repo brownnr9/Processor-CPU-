@@ -12,6 +12,11 @@ module Processor
 	reg wren;
 	wire [31:0] data_out;
 	
+	
+	/*		EXTENDED IMMEDIETE VALUES		*/
+	wire [31:0] i_imm = { {20{data_out[31]}}, data_out[31:20] };
+	wire [31:0] s_imm = { {20{data_out[31]}}, data_out[31:25], data_out[11:7] };
+	wire [31:0] b_imm = { {19{data_out[31]}}, data_out[31], data_out[7], data_out[30:25], data_out[11:8] };
 
 	
 	
@@ -82,6 +87,7 @@ module Processor
 		
 //	-	-	-	-	-	-	-	-	-	 ALU INSTANTIATION	-	-	-	-	-	-	-	-	-	
 
+	reg [ 3:0] aluControl;
 	wire [31:0] aluOut;
 	reg [31:0] aluIn1, aluIn2;
 	ALU myALU (
@@ -90,7 +96,21 @@ module Processor
 		.aluControl( aluControl ),
 		.out(aluOut)
 	);
-
+	
+			/*		CONTROL SIGNALS	*/
+						
+	parameter
+							ADD	=	4'd0,
+							SUB	=	4'd1,
+							AND	=	4'd2,
+							OR	=	4'd3,
+							XOR	=	4'd4,
+							SLT	=	4'd5,
+							SLTU	=	4'd6,
+							SRA	=	4'd7,
+							SRL	=	4'd8,
+							SLL	=	4'd9,
+							MUL	=	4'd10;
 
 
 				/*		OPCODE DEFINITIONS		*/
@@ -127,21 +147,6 @@ module Processor
 			
 					BRANCH      = 7'b1100011;
 					
-		/*		CONTROL SIGNALS	*/
-					
-					reg [ 3:0] aluControl;
-						parameter
-							ADD	=	4'd0,
-							SUB	=	4'd1,
-							AND	=	4'd2,
-							OR	=	4'd3,
-							XOR	=	4'd4,
-							SLT	=	4'd5,
-							SLTU	=	4'd6,
-							SRA	=	4'd7,
-							SRL	=	4'd8,
-							SLL	=	4'd9,
-							MUL	=	4'd10;
 
 
 
@@ -200,6 +205,7 @@ module Processor
 					address <= 10'd0;		// SIZE OF THIS BUS MAY CHANGE IF I CHANGE MEMORY CAPACITY	- UPDATE SYMBOL FILE FOR MEMORY.V TO DOUBLE CHECK
 					data_in <= 32'd0;
 					wren <= 1'b0;
+					PC <= 10'd0;
 				end
 			else
 			
@@ -271,20 +277,55 @@ module Processor
 										
 										3'b001:
 											aluControl	<=	SLL;
-											
-											
+								
+								endcase		//endcase for func3
 									
-									endcase
-									
-								end
+							end		//end of Reg_Reg instructions
+							
+							REG_IMM:
+								begin
+									write_reg <= data_out [11:7];		//address of reg being written to
+									read_reg_1 <= data_out [19:15];	//addresses of registers being read from
+										
+									case ( data_out [14:12] ) 		// func3 specifies the instruction
+											/*	add, sub, mul */
+										3'b000:
+											aluControl <= ADD;
+										
+										3'b111:
+											aluControl	<=	AND;
+											
+										3'b110:
+											aluControl	<=	OR;
+											
+										3'b100:
+											aluControl	<=	XOR;
+											
+										3'b010:
+											aluControl	<=	SLT;
+											
+										3'b011:
+											aluControl	<=	SLTU;
+											
+										/*	SHIFT RIGHT (ARETHMETIC AND LOGIC)	*/
+										3'b101:
+											if(data_out[30])
+												aluControl	<=	SRA;
+											else
+												aluControl	<=	SRL;
+										
+										3'b001:
+											aluControl	<=	SLL;
+										
+									endcase  // end of func3
+										
+								end		// end of Reg_Imm
 							
 							
 							
 							
 							
-							
-							
-						endcase
+					endcase
 						
 						
 						
@@ -299,41 +340,49 @@ module Processor
 				EXECUTE:
 					begin
 						reg_wren <= 1'b0;	//	do not write to register in execute phase
-						if( data_out [6:0] == REG_REG	)
-						begin
-							aluIn1	<=	read_data_1;
-							aluIn2 <= read_data_2;
+						case( data_out [6:0])
+							REG_REG:
+							begin
+								aluIn1	<=	read_data_1;
+								aluIn2 <= read_data_2;
+							end
 							
-						end
+							REG_IMM:
+							begin
+								aluIn1	<=	read_data_1;
+								aluIn2	<=	i_imm;
+							end
 						
-					
+						endcase
 						
 						
 						
 						
-					end
+					end		// end of execute
 					
 				WRITE_BACK:
 					begin
-					/*		TEST		*/
-					if(aluOut == 1)
-					LED <= 10'b0011111111;
+					//TEST
+					if(aluOut == 20)
+						LED = 10'b0101010101;
 					
 						reg_wren <= 1'b1;
-						if( data_out [6:0] == REG_REG )
-						begin
-							write_data <= aluOut;
-							PC	<=	PC+1;
-						end
+						case( data_out [6:0] )
+							REG_REG, REG_IMM:
+							begin
+								write_data <= aluOut;
+								PC	<=	PC+1;
+							end
+							
+							
 						
-						
-					end
+						endcase
 					
 					
 					
-			endcase
+					end		// END OF WRITE BACK
 
 
-
+		endcase		//end of states
 
 endmodule
