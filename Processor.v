@@ -206,6 +206,15 @@ module Processor
 					data_in <= 32'd0;
 					wren <= 1'b0;
 					PC <= 10'd0;
+					reg_wren <= 1'b0;
+					write_reg <= 5'd0;
+					write_data <= 32'd0;
+					read_reg_1 <= 5'd0;
+					read_reg_2 <= 5'd0;
+					aluControl <= 4'd0;
+					aluIn1 <= 32'd0;
+					aluIn2 <= 32'd0;
+					
 				end
 			else
 			
@@ -364,7 +373,9 @@ module Processor
 					begin
 					//TEST
 					if(aluOut == 20)
-						LED = 10'b0101010101;
+						LED <= 10'b0101010101;
+					else
+						LED <= 10'd1;
 					
 						reg_wren <= 1'b1;
 						case( data_out [6:0] )
