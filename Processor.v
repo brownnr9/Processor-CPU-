@@ -17,6 +17,8 @@ module Processor
 	wire [31:0] i_imm = { {20{data_out[31]}}, data_out[31:20] };
 	wire [31:0] s_imm = { {20{data_out[31]}}, data_out[31:25], data_out[11:7] };
 	wire [31:0] b_imm = { {19{data_out[31]}}, data_out[31], data_out[7], data_out[30:25], data_out[11:8] };
+	wire [31:0] u_imm = { data_out[31:12], 12'b0 };
+	wire [31:0] j_imm = { {12{data_out[31]}}, data_out[19:12], data_out[20], data_out[30:25], data_out[24:21], 1'b0 };
 
 	
 	
@@ -331,6 +333,16 @@ module Processor
 								end		// end of Reg_Imm
 							
 							
+							LUI:		//Load U type immediete into top 20 bits
+								begin
+									write_reg <= data_out [11:7];		//address of reg being written to
+								end
+								
+							AUIPC:		//Add U type immediete and PC
+								begin
+									write_reg <= data_out [11:7];		//address of reg being written to
+									aluControl	<= ADD;
+								end
 							
 							
 							
@@ -361,6 +373,17 @@ module Processor
 								aluIn1	<=	read_data_1;
 								aluIn2	<=	i_imm;
 							end
+							
+							LUI:
+							begin
+								// No ALU task to do
+							end
+							
+							AUIPC:
+							begin
+								aluIn1	<= {32'b0, PC};
+								aluIn2	<= u_imm;
+							end
 						
 						endcase
 						
@@ -371,19 +394,21 @@ module Processor
 					
 				WRITE_BACK:
 					begin
-					//TEST
-					if(aluOut == 20)
-						LED <= 10'b0101010101;
-					else
-						LED <= 10'd1;
 					
 						reg_wren <= 1'b1;
 						case( data_out [6:0] )
-							REG_REG, REG_IMM:
+							REG_REG, REG_IMM, AUIPC:
 							begin
 								write_data <= aluOut;
 								PC	<=	PC+1;
 							end
+							
+							LUI:
+							begin
+								write_data <= u_imm;
+								PC <= PC+1;
+							end
+
 							
 							
 						
