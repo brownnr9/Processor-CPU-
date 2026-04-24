@@ -32,9 +32,9 @@ always@(*)
 		XOR:	out = rs1 ^ rs2;
 		SLT:	out = $signed(rs1) < $signed(rs2);
 		SLTU: out = rs1 < rs2;
-		SRA:	out = rs1 >>> rs2;
-		SRL:	out = rs1 >> rs2;
-		SLL:	out = rs1 << rs2;
+		SRA: out = $signed(rs1) >>> rs2[4:0];
+		SRL: out = rs1 >> rs2[4:0];
+		SLL: out = rs1 << rs2[4:0];
 		MUL:	out = rs1 * rs2;
 		
 		default: out = 32'b0;

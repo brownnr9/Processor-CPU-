@@ -1,0 +1,21 @@
+# IMMEDIETE BENCH MARK
+addi t0, t0, 10 # t = t +10 | 10
+srai t0, t0, 1 #t = t / 2 |5
+slli t0, t0, 2 #t = t * 4 |20
+addi t0, t0, -3 #t = t + (-3) |17
+
+
+
+00a28293
+4012d293
+00229293
+ffd28293
+
+
+DIFFERENCE BETWEEN RISC V AND TINY RISC V
+*** should be ***
+
+00a28293
+4012d293
+00129293
+ffd28293

@@ -12,13 +12,15 @@ module Processor
 	reg wren;
 	wire [31:0] data_out;
 	
+	reg [31:0] stored_instr;
+	
 	
 	/*		EXTENDED IMMEDIETE VALUES		*/
-	wire [31:0] i_imm = { {20{data_out[31]}}, data_out[31:20] };
-	wire [31:0] s_imm = { {20{data_out[31]}}, data_out[31:25], data_out[11:7] };
-	wire [31:0] b_imm = { {19{data_out[31]}}, data_out[31], data_out[7], data_out[30:25], data_out[11:8] };
-	wire [31:0] u_imm = { data_out[31:12], 12'b0 };
-	wire [31:0] j_imm = { {12{data_out[31]}}, data_out[19:12], data_out[20], data_out[30:25], data_out[24:21], 1'b0 };
+	wire [31:0] i_imm = { {20{stored_instr[31]}}, stored_instr[31:20] };
+	wire [31:0] s_imm = { {20{stored_instr[31]}}, stored_instr[31:25], stored_instr[11:7] };
+	wire [31:0] b_imm = { {19{stored_instr[31]}}, stored_instr[31], stored_instr[7], stored_instr[30:25], stored_instr[11:8] };
+	wire [31:0] u_imm = { stored_instr[31:12], 12'b0 };
+	wire [31:0] j_imm = { {12{stored_instr[31]}}, stored_instr[19:12], stored_instr[20], stored_instr[30:25], stored_instr[24:21], 1'b0 };
 
 	
 	
@@ -31,6 +33,7 @@ module Processor
 		.q ( data_out )
 		);
 		
+
 		/*
 			NOTES: 2 CYCLE MEMORY ACCESS
 						THIS IS **NOT** BYTE ACCESSABLE MEMORY
@@ -246,7 +249,7 @@ module Processor
 				DECODE:
 					begin
 						/*		UPDATE CONTROL SIGNALS BASED ON INSTRUCTION		*/	
-						
+						stored_instr <= data_out;
 						case( data_out [6:0] )			// the first 7 bits of the instruction are the opcode in tiny risc-V
 							
 							REG_REG: 
@@ -399,7 +402,7 @@ module Processor
 				EXECUTE:
 					begin
 						reg_wren <= 1'b0;	//	do not write to register in execute phase
-						case( data_out [6:0])
+						case( stored_instr [6:0])
 							REG_REG:
 							begin
 								aluIn1	<=	read_data_1;
@@ -408,8 +411,12 @@ module Processor
 							
 							REG_IMM:
 							begin
-								aluIn1	<=	read_data_1;
-								aluIn2	<=	i_imm;
+								aluIn1 <= read_data_1;
+								// For shift operations (SRAI, SRLI, SLLI), use only 5-bit shamt
+								 if(stored_instr[14:12] == 3'b101 || stored_instr[14:12] == 3'b001)
+									  aluIn2 <= {27'b0, stored_instr[24:20]};  // 5-bit shift amount
+								 else
+									  aluIn2 <= i_imm;  // Full 12-bit sign-extended immediate
 							end
 							
 							LUI:
@@ -445,7 +452,7 @@ module Processor
 							begin
 							aluIn1	<=	PC;
 								
-								case(	data_out [ 11:7 ])
+								case(	stored_instr [ 14:12 ])
 									3'b000:
 										if(	read_data_1	==	read_data_2)
 											aluIn2	<=	b_imm >>> 2;
@@ -496,8 +503,13 @@ module Processor
 					
 				WRITE_BACK:
 					begin
+						//FOR IMM_IMM TEST
+							if(stored_instr[6:0] == REG_IMM && aluOut == 32'd17)
+								LED<= 10'b0101001010;
+							else
+								LED<=10'b1111100000;
 					
-						case( data_out [6:0] )
+						case( stored_instr [6:0] )
 							REG_REG, REG_IMM, AUIPC:
 							begin
 								reg_wren <= 1'b1;
