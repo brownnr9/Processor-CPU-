@@ -26,11 +26,12 @@ module Registers
 					register [i] <= 32'd0;
 				end
 		
-		else if( wren == 1'b1)			//WRITE ENABLE IS ON
+		else if( wren == 1'b1 && write_reg != 32'd0)			//WRITE ENABLE IS ON
 			register [write_reg] <= write_data;
 		
 		/*		REG TYPES <= THEMSELVES BY DEFAULT
 					ALL OTHER INDICIES OF REGISTER STAY THE SAME		*/
+					
 	end
 	
 	

@@ -228,12 +228,14 @@ module Processor
 						address <= 10'd0;		// SIZE OF THIS BUS MAY CHANGE IF I CHANGE MEMORY CAPACITY	- UPDATE SYMBOL FILE FOR MEMORY.V TO DOUBLE CHECK
 						data_in <= 32'd0;
 						wren <= 1'b0;
+						reg_wren	<= 1'b0;
 					end
 					
 				FETCH:
 					begin
 						address <= PC;
 						wren <= 1'b0;
+						reg_wren <= 1'b0;
 					end
 					
 				FETCH_2:
@@ -343,6 +345,34 @@ module Processor
 									write_reg <= data_out [11:7];		//address of reg being written to
 									aluControl	<= ADD;
 								end
+								
+								
+							LOAD:
+								begin
+									write_reg <= data_out [11:7];		//address of reg being written to
+									
+								end
+								
+							STORE:
+								begin
+									read_reg_1 <= data_out[19:15];	//address of where to be stored in memory
+									read_reg_2 <= data_out[24:20];	//data to be stored
+									aluControl <= ADD;
+								end
+								
+								
+							JAL:
+								begin
+									write_reg <= data_out [11:7];		//address of reg being written to
+									aluControl	<=	ADD;
+								end
+								
+							JR:
+							begin
+								aluControl <= ADD;
+								write_reg	<=	data_out[11:7];
+								read_reg_1	<=	data_out[19:15];
+							end
 							
 							
 							
@@ -381,8 +411,26 @@ module Processor
 							
 							AUIPC:
 							begin
-								aluIn1	<= {32'b0, PC};
+								aluIn1	<= {22'b0, PC};
 								aluIn2	<= u_imm;
+							end
+							
+							STORE:
+							begin
+								aluIn1	<= read_data_1;
+								aluIn2	<=	s_imm;
+							end
+							
+							JAL:
+							begin
+								aluIn1	<= PC;
+								aluIn2	<=	$signed(j_imm) >>> 2;
+							end
+							
+							JR:		//same as JALR
+							begin
+								aluIn1	<=	read_data_1;
+								aluIn2	<=	$signed(i_imm) >>> 2;
 							end
 						
 						endcase
@@ -395,20 +443,45 @@ module Processor
 				WRITE_BACK:
 					begin
 					
-						reg_wren <= 1'b1;
 						case( data_out [6:0] )
 							REG_REG, REG_IMM, AUIPC:
 							begin
+								reg_wren <= 1'b1;
 								write_data <= aluOut;
 								PC	<=	PC+1;
 							end
 							
 							LUI:
 							begin
+								reg_wren <= 1'b1;
 								write_data <= u_imm;
 								PC <= PC+1;
 							end
+							
+							STORE:
+							begin
+								wren <= 1'b1;
+								data_in	<= read_data_2;
+								address	<=	aluOut;
+								PC <= PC+1;
+							end
 
+							JAL:
+							begin
+								reg_wren <= 1'b1;
+								write_data <= PC + 1;
+								PC	<= aluOut;
+								
+							end
+							
+							JR:
+							begin
+								reg_wren	<=	1'b1;
+								write_data	<=	PC + 1;
+								PC	<=	aluOut;
+							end
+							
+							
 							
 							
 						
