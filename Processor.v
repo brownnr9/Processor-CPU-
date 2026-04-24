@@ -374,6 +374,14 @@ module Processor
 								read_reg_1	<=	data_out[19:15];
 							end
 							
+							BRANCH:
+							begin
+								read_reg_1	<=	data_out[19:15];
+								read_reg_2	<=	data_out[24:20];
+								aluControl	<=	ADD;
+								
+							
+							end
 							
 							
 					endcase
@@ -424,13 +432,59 @@ module Processor
 							JAL:
 							begin
 								aluIn1	<= PC;
-								aluIn2	<=	$signed(j_imm) >>> 2;
+								aluIn2	<=	j_imm >>> 2;
 							end
 							
 							JR:		//same as JALR
 							begin
 								aluIn1	<=	read_data_1;
-								aluIn2	<=	$signed(i_imm) >>> 2;
+								aluIn2	<=	i_imm >>> 2;
+							end
+							
+							BRANCH:
+							begin
+							aluIn1	<=	PC;
+								
+								case(	data_out [ 11:7 ])
+									3'b000:
+										if(	read_data_1	==	read_data_2)
+											aluIn2	<=	b_imm >>> 2;
+										else
+											aluIn2	<= 32'd1;
+											
+									3'b001:
+										if(	read_data_1	!=	read_data_2)
+												aluIn2	<=	b_imm >>> 2;
+											else
+												aluIn2	<= 32'd1;
+												
+									3'b100:
+										if(	$signed(read_data_1)	<	$signed(read_data_2))
+												aluIn2	<=	b_imm >>> 2;
+											else
+												aluIn2	<= 32'd1;
+												
+									3'b101:
+									if(	$signed(read_data_1)	>=	$signed(read_data_2)	)
+												aluIn2	<=	b_imm >>> 2;
+											else
+												aluIn2	<= 32'd1;
+												
+									3'b110:
+										if(	read_data_1	<	read_data_2)
+													aluIn2	<=	b_imm >>> 2;
+												else
+													aluIn2	<= 32'd1;
+													
+									3'b111:
+										if(	read_data_1	>	read_data_2)
+													aluIn2	<=	b_imm >>> 2;
+												else
+													aluIn2	<= 32'd1;
+								
+								endcase
+							
+							
 							end
 						
 						endcase
@@ -481,6 +535,13 @@ module Processor
 								PC	<=	aluOut;
 							end
 							
+							
+							
+							BRANCH:
+							begin
+								PC	<=	aluOut;
+							
+							end
 							
 							
 							
