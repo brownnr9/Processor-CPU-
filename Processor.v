@@ -504,7 +504,7 @@ module Processor
 				WRITE_BACK:
 					begin
 						//FOR IMM_IMM TEST
-							if(stored_instr[6:0] == REG_IMM && aluOut == 32'd18)
+							if(stored_instr[6:0] == REG_REG && aluOut == 32'd46)
 								LED<= 10'b0101001010;
 					
 						case( stored_instr [6:0] )
