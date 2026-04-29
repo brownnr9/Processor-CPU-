@@ -1,0 +1,26 @@
+# REGISTER TO REGISTER BENCH MARK
+addi t0, t0, 10 # t = t +10 | t = 10
+addi t1, t1, 5 # i = i + 5 | i = 5
+add t0, t0, t1 # t = t + i | t = 15
+mul t0, t0, t1 # t = t * i | t = 75 1001011
+sub t1, t0, t1 # i = t - i | i = 70 1000110
+and t1, t0, t1 # i = t & i | i = 66 1000010
+
+addi t2, t2, 2 # k = k + 2 | k = 2
+sra t0, t0, t2 # t = t >> k | t = 18 0010010
+or t1, t1, t0 # i = i | t | i = 82 1010010
+xor t1, t1, t0 # i = i ^ t | i = 64 1000000
+
+sub t1, t1, t0 #i = i - t | i = 46 t = 18
+
+00a28293
+00530313
+006282b3
+026282b3
+40628333
+0062f333
+00238393
+4072d2b3
+00536333
+00534333
+40530333
