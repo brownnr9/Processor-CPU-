@@ -2,9 +2,12 @@ module Processor
 	(
 		input clk,
 		input rst,
-		output reg [9:0] LED
+		input [4:0] switches,
+		output [9:0] LED
 	
 	);
+	
+	
 	
 	reg [ 9:0] PC;
 	reg [9:0] address;		// SIZE OF THIS BUS MAY CHANGE IF I CHANGE MEMORY CAPACITY	- UPDATE SYMBOL FILE FOR MEMORY.V TO DOUBLE CHECK
@@ -85,7 +88,9 @@ module Processor
 		.read_reg_1 ( read_reg_1 ),
 		.read_reg_2 ( read_reg_2 ),
 		.read_data_1 ( read_data_1 ),
-		.read_data_2 ( read_data_2 )
+		.read_data_2 ( read_data_2 ),
+		.LEDout (LED),
+		.switches (switches )
 		);
 		
 
@@ -185,20 +190,24 @@ module Processor
 			START:	NS = FETCH;
 			FETCH:	NS	= FETCH_2;
 			FETCH_2:	NS = DECODE;
-			DECODE:	NS = EXECUTE;
+			DECODE:	begin
+                        if (data_out == 32'd0) 
+                            NS = STOP;       // If instruction is 0, go to STOP
+                        else 
+                            NS = EXECUTE;    // Otherwise, continue as normal
+                    end
 			EXECUTE:	NS = WRITE_BACK;
 			WRITE_BACK:	NS = FETCH;
 			
-				default: NS = STOP;		//IF ERROR -> STOP
-				STOP:	NS = STOP;
+			STOP: NS = STOP;
+			default: NS = STOP;
+			
 		
 		endcase
 		
 		
 		
 		
-			
-						
 			
 		
 		
@@ -223,6 +232,10 @@ module Processor
 				end
 			else
 			
+		begin
+		
+		wren <= 1'b0;
+		reg_wren <= 1'b0;
 					
 			case(S)
 			
@@ -386,6 +399,14 @@ module Processor
 							
 							end
 							
+							default:
+								begin
+								
+								
+								
+								
+								end
+							
 							
 					endcase
 						
@@ -484,7 +505,8 @@ module Processor
 													aluIn2	<= 32'd1;
 													
 									3'b111:
-										if(	read_data_1	>	read_data_2)
+										if(	read_data_1	>
+	read_data_2)
 													aluIn2	<=	b_imm >>> 2;
 												else
 													aluIn2	<= 32'd1;
@@ -502,10 +524,7 @@ module Processor
 					end		// end of execute
 					
 				WRITE_BACK:
-					begin
-						//FOR IMM_IMM TEST
-							if(stored_instr[6:0] == REG_IMM && PC == 6 && aluOut == 32'd50)
-								LED<= 10'b0101001010;
+					begin			/*	TEST	*/
 					
 						case( stored_instr [6:0] )
 							REG_REG, REG_IMM, AUIPC:
@@ -513,6 +532,7 @@ module Processor
 								reg_wren <= 1'b1;
 								write_data <= aluOut;
 								PC	<=	PC+1;
+								address <= PC + 1;
 							end
 							
 							LUI:
@@ -520,6 +540,7 @@ module Processor
 								reg_wren <= 1'b1;
 								write_data <= u_imm;
 								PC <= PC+1;
+								address <= PC + 1;
 							end
 							
 							STORE:
@@ -528,6 +549,7 @@ module Processor
 								data_in	<= read_data_2;
 								address	<=	aluOut;
 								PC <= PC+1;
+								address <= PC + 1;
 							end
 
 							JAL:
@@ -535,6 +557,7 @@ module Processor
 								reg_wren <= 1'b1;
 								write_data <= PC + 1;
 								PC	<= aluOut;
+								address <= aluOut;
 								
 							end
 							
@@ -543,6 +566,7 @@ module Processor
 								reg_wren	<=	1'b1;
 								write_data	<=	PC + 1;
 								PC	<=	aluOut;
+								address <= aluOut;
 							end
 							
 							
@@ -550,6 +574,7 @@ module Processor
 							BRANCH:
 							begin
 								PC	<=	aluOut;
+								address <= aluOut;
 							
 							end
 							
@@ -564,5 +589,7 @@ module Processor
 
 
 		endcase		//end of states
+		
+	end
 
 endmodule

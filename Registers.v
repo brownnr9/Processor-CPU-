@@ -10,8 +10,10 @@ module Registers
 		input [ 31:0] write_data,
 		input [4:0] read_reg_1,		//	ADDRESS OF REGISTER TO BE READ FROM
 		input [4:0] read_reg_2,
+		input [4:0] switches,
 		output [ 31:0] read_data_1,		//	THE DATA IN REGISTER AT ADDR READ_REG_1
-		output [ 31:0] read_data_2
+		output [ 31:0] read_data_2,
+		output reg [ 9:0] LEDout
 	
 	);
 	
@@ -39,4 +41,11 @@ module Registers
 	assign read_data_1 = register [ read_reg_1];
 	assign read_data_2 = register [ read_reg_2];
 			
+			
+	/*		TEST		*/
+	always@(*)
+		begin
+		LEDout = register[7] [9:0];
+	end
+	
 endmodule
