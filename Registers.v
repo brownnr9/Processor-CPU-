@@ -45,7 +45,10 @@ module Registers
 	/*		TEST		*/
 	always@(*)
 		begin
-		LEDout = register[7] [9:0];
+		if(switches == 5'b00000)
+			LEDout = register[7] [9:0];
+		else
+			LEDout = 10'd0;
 	end
 	
 endmodule
