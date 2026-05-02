@@ -1,9 +1,9 @@
 C code
 
-a = 10;
-b = 5;
+int a = 10;
+int b = 5;
 
-c = a + b;
+int c = a + b;
 
 c = c - a;
 
@@ -13,7 +13,7 @@ c = c >> 2;
 
 c = c & b;
 
-out = a + b + c;
+int out = a + b + c;
 
 // a = 10, b = 5, c = 1, out = 16
 

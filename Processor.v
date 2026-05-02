@@ -162,18 +162,20 @@ module Processor
 
 //	-	-	-	-	-	-	-	-	-	 FINITE STATE MACHINE (FSM)	-	-	-	-	-	-	-	-	-	
 				
-	reg [ 2:0 ] S;		//	CURRENT STATE
-	reg [ 2:0 ] NS;		//	NEXT STATE
+	reg [ 3:0 ] S;		//	CURRENT STATE
+	reg [ 3:0 ] NS;		//	NEXT STATE
 	
 	parameter
-					START	=	3'd0,
-					FETCH	=	3'd1,
-					FETCH_2	=	3'd2,			//2 CYCLE MEMORY ACCESS
-					DECODE	=	3'd3,
-					EXECUTE	=	3'd4,			//DOES NOT NEED EXTRA STATE BC NEXT STATE DOES NOT READ MEM
-					WRITE_BACK	=	3'd5,
+					START	=	4'd0,
+					FETCH	=	4'd1,
+					FETCH_2	=	4'd2,			//2 CYCLE MEMORY ACCESS
+					DECODE	=	4'd3,
+					EXECUTE	=	4'd4,			//DOES NOT NEED EXTRA STATE BC NEXT STATE DOES NOT READ MEM
+					WRITE_BACK	=	4'd5,
+					MEM_WAIT = 4'd7,
+					MEM_WAIT_2 = 4'd8,
 					
-					STOP	=	3'd6;
+					STOP	=	4'd6;
 
 					
 					
@@ -196,15 +198,21 @@ module Processor
                         else 
                             NS = EXECUTE;    // Otherwise, continue as normal
                     end
-			EXECUTE:	NS = WRITE_BACK;
-			WRITE_BACK:	NS = FETCH;
+			EXECUTE:	begin
+								if(stored_instr[6:0] == LOAD || stored_instr[6:0] == STORE)
+									NS = MEM_WAIT;
+								else
+										NS = WRITE_BACK;
+						end
+			MEM_WAIT: NS = MEM_WAIT_2;
+			MEM_WAIT_2: NS = WRITE_BACK;
+			WRITE_BACK: NS = FETCH;
 			
 			STOP: NS = STOP;
 			default: NS = STOP;
 			
 		
 		endcase
-		
 		
 		
 		
@@ -366,7 +374,7 @@ module Processor
 							LOAD:
 								begin
 									write_reg <= data_out [11:7];		//address of reg being written to
-									
+									read_reg_1 <= data_out [19:15];	//address of memory location
 								end
 								
 							STORE:
@@ -451,10 +459,16 @@ module Processor
 								aluIn2	<= u_imm;
 							end
 							
+							LOAD:
+							begin
+								address <= read_data_1 + i_imm;
+							end
+							
 							STORE:
 							begin
-								aluIn1	<= read_data_1;
-								aluIn2	<=	s_imm;
+								wren <= 1'b1;
+								data_in	<= read_data_2;
+								address	<=	read_data_1 + s_imm;
 							end
 							
 							JAL:
@@ -524,7 +538,7 @@ module Processor
 					end		// end of execute
 					
 				WRITE_BACK:
-					begin			/*	TEST	*/
+					begin	
 					
 						case( stored_instr [6:0] )
 							REG_REG, REG_IMM, AUIPC:
@@ -543,11 +557,17 @@ module Processor
 								address <= PC + 1;
 							end
 							
+							LOAD:
+							begin
+								reg_wren <= 1'b1;
+								write_data <= data_out;
+								PC <= PC+1;
+								address <= PC + 1;
+							end
+							
 							STORE:
 							begin
-								wren <= 1'b1;
-								data_in	<= read_data_2;
-								address	<=	aluOut;
+								wren <= 1'b0;
 								PC <= PC+1;
 								address <= PC + 1;
 							end

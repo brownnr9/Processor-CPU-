@@ -1,0 +1,51 @@
+C code
+
+int addr = (int *)100;
+
+int a = 4;
+int b = 16;
+
+addr[0] = a;
+addr[1] = b;
+
+a = a + 1;
+b = b - a;
+
+out1 = a0[0];
+out2 = a0[1];
+
+// a = 5, b = 11, out1 = 4, out2 = 16
+
+------------------------------------------------------------
+
+Assembly code
+
+li a0, 100 # saves address of safe memory
+li t0 4 # a = 4
+li t1 16 # b = 16
+
+sw t0, 0(a0)
+sw t1, 4(a0) #store a and b into memory
+
+addi t0, t0, 1 # a = a + 1 a = 5
+sub t1 t1 t0 # b = b - a b = 11
+
+lw t2, 0(a0) #out1 = 4
+lw s0, 4(a0) #out2 = 16
+
+------------------------------------------------------------
+
+Computer code (Hex code)
+
+CONTENT BEGIN
+	0    :   06400513;
+	1    :   00400293;
+	2    :   01000313;
+	3    :   00552023;
+	4    :   00652223;
+	5    :   00128293;
+	6    :   40530333;
+	7    :   00052383;
+	8    :   00452403;
+	[9..1023] : 00000000;
+END;
