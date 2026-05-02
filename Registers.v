@@ -43,10 +43,21 @@ module Registers
 			
 			
 	/*		TEST		*/
+	/*		switches	->	displayed register
+			00000	->	t0 (x5)
+			00001	-> t1 (x6)
+			00010 -> t2	(x7)
+			00011	->	s0 (x8)	*/
 	always@(*)
 		begin
 		if(switches == 5'b00000)
+			LEDout = register[5] [9:0];
+		else if(switches == 5'b00001)
+			LEDout = register[6] [9:0];
+		else if(switches == 5'b00010)
 			LEDout = register[7] [9:0];
+		else if(switches == 5'b00011)
+			LEDout = register[8] [9:0];
 		else
 			LEDout = 10'd0;
 	end
