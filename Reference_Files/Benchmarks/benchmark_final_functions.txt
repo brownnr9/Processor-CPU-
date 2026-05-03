@@ -1,0 +1,89 @@
+C code
+
+int base = 2;
+int power = 3;
+int num = 10;
+
+base = exp(base,power);
+
+
+
+
+
+int exp(int base, int power)
+{
+	int output = base;
+	power = power - 2;
+	while(power >= 0)
+	{
+		output = base * base;
+		power = power - 1;
+	}
+	return output;
+}
+
+------------------------------------------------------------
+
+Assembly code
+
+li s1, 500 # start writing memory at address 500
+li t0, 2 #a=2
+li t1, 3 #b=3
+li t2, 10 #c=10
+
+addi a0, t0, 0
+addi a1, t1, 0
+jal exp
+
+addi t0, a0, 0 # a = exp(a,b)
+
+j end
+
+
+
+# int square (int n) return n^2
+exp:
+	sw t0, 0(s1)
+	sw t1, 1(s1)
+
+	addi t0, a0, 0 # temp = base
+	addi a1, a1 -2
+	exp_loop: #while(exp >=0) { base *= base; exp--;}
+		mul a0, a0, t0
+		addi a1, a1, -1
+		bge a1, zero, exp_loop
+
+	lw t1, 1(s1)
+	lw t0, 0(s1)
+	jr ra
+
+end:
+
+------------------------------------------------------------
+
+Computer code (Hex code)
+
+CONTENT
+BEGIN
+    0   :   1f400493; 
+    1   :   00200293;
+    2   :   00300313;
+    3   :   00a00393;
+    4   :   00028513;
+    5   :   00030593;
+    6   :   00c000ef;
+    7   :   00050293;
+    8   :   02c0006f;
+    9   :   0054a023;
+    10  :   0064a0a3;
+    11  :   00050293;
+    12  :   ffe58593;
+    13  :   02550533;
+    14  :   fff58593;
+    15  :   fe05dce3;
+    16  :   0014a303;
+    17  :   0004a283;
+    18  :   00008067;
+    
+    [19..1023]  :   00000000;
+END;

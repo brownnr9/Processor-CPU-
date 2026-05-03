@@ -23,13 +23,25 @@ DATA_RADIX=HEX;
 
 CONTENT
 BEGIN
-    0   :   00a00293;
-    1   :   00000313;
-    2   :   00100413;
-    3   :   0080006f; 
-    4   :   00040413;
-    5   :   00130313;
-    6   :   fe629ee3;
+    0   :   1f400493; -- li s1, 500
+    1   :   00200293; -- li t0, 2
+    2   :   00300313; -- li t1, 3
+    3   :   00a00393; -- li t2, 10
+    4   :   00028513; -- mv a0, t0
+    5   :   00030593; -- mv a1, t1
+    6   :   00c000ef; -- jal ra, 12 (Targeting sub @ offset 12)
+    7   :   00050293; -- li t0, 0
+    8   :   02c0006f; -- j 44 (Targeting end @ offset 44)
+    9   :   0054a023; -- sw t0, 0(s1)
+    10  :   0064a0a3; -- sw t1, 1(s1) (Note: word-aligned encoding)
+    11  :   00050293; -- li t0, 0
+    12  :   ffe58593; -- addi a1, a1, -2
+    13  :   02550533; -- add a0, a0, s5
+    14  :   fff58593; -- addi a1, a1, -1
+    15  :   fe05dce3; -- bne a1, zero, -8 (Loop back)
+    16  :   0014a303; -- lw t1, 1(s1)
+    17  :   0004a283; -- lw t0, 0(s1)
+    18  :   00008067; -- jalr x0, 0(ra) (Return)
     
-    [7..1023]  :   00000000;
+    [19..1023]  :   00000000; -- Fill remaining memory with zeros
 END;
