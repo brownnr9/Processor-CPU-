@@ -22,6 +22,8 @@ int exp(int base, int power)
 	return output;
 }
 
+// base = 8, power = 3, num = 10
+
 ------------------------------------------------------------
 
 Assembly code
