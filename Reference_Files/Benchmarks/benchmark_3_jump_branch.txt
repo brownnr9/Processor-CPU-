@@ -1,0 +1,44 @@
+C code
+
+a = 10;
+b = 0;
+jumpTest = 1;
+
+// jump test = 0;
+
+for(b=0; b!=a; b++)
+
+//	a = 10, b = 10, jumpTest = 1
+
+------------------------------------------------------------
+
+Assembly code
+
+li t0, 10 #a=10
+li t1, 0 #b = 0
+li s0, 1 #jumpTest = 1
+
+j skip
+addi s0, s0, 0 #this instruction is skipped
+
+skip:
+
+addi t1, t1, 1 # b++ for(b=0; b!=a; b++)
+bne t0, t1, skip
+
+------------------------------------------------------------
+
+Computer code (Hex code)
+
+CONTENT
+BEGIN
+    0   :   00a00293;
+    1   :   00000313;
+    2   :   00100413;
+    3   :   0080006f; 
+    4   :   00040413;
+    5   :   00130313;
+    6   :   fe629ee3;
+    
+    [7..1051]  :   00000000;
+END;
